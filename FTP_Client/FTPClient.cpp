@@ -8,6 +8,7 @@ FTPClient::FTPClient(const char* ip, int port, std::function<void(const char*)> 
 	std::function<void(const char*)> line_rec_cb = std::bind(&FTPClient::line_received_callback, this, std::placeholders::_1);
 	telnet_client = new TelNetClient(ip, port, line_rec_cb);
 	connected = true;
+	filesystem = new VirtualFS("vfs_root");
 }
 
 void FTPClient::line_received_callback(const char* line)
@@ -62,7 +63,7 @@ namespace
 	}
 
 	//	"150 Opening ASCII mode data connection for ... (163 bytes)
-	long long get_data_size(const char* input)
+	int get_data_size(const char* input)
 	{
 		const char* nr_start = my_strnchr(input, FTPClient::MAX_LINE_BUFF_SIZE - 1, '(') + 1;
 		long long nr = 0;
@@ -79,7 +80,8 @@ namespace
 
 		if (digits_cnt == 0)
 			throw std::exception("No number found");
-
+		if (nr<INT_MIN || nr>INT_MAX)
+			throw std::exception("Number out of range");
 		return nr;
 	}
 }
@@ -105,6 +107,36 @@ void FTPClient::list(const char* path)
 		throw std::exception("Failed transfer");
 
 }
+
+void FTPClient::stor(const char* path)
+{
+	if(send_command_wrapper(bufferf("STOR %s", path))!=150)
+		throw std::exception("Failed");
+
+	std::vector<char> buffer = filesystem->read(path);
+	data_port.send(buffer.data(), buffer.size());
+	data_port.close();
+
+	if (telnet_client->recv_response() != 226)
+		throw std::exception("Failed transfer");
+}
+
+void FTPClient::retr(const char* path)
+{
+	if (send_command_wrapper(bufferf("RETR %s", path)) != 150)
+		throw std::exception("Failed");
+
+	int data_size = get_data_size(line_buffer);
+	printf("Data size = %i\n", data_size);
+	
+	std::vector<char> buffer(data_size);	
+	data_port.recv(buffer.data(), buffer.size());	
+	filesystem->write(path, buffer);
+
+	if (telnet_client->recv_response() != 226)
+		throw std::exception("Failed transfer");
+}
+
 
 void FTPClient::pasv()
 {
@@ -161,4 +193,5 @@ void FTPClient::pasv()
 FTPClient::~FTPClient()
 {
 	delete telnet_client;
+	delete filesystem;
 }

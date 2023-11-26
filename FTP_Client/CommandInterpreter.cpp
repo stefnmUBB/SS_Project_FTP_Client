@@ -171,7 +171,7 @@ void CommandInterpreter::execute(const char* cmd)
 		if (*cmd == ' ')
 		{
 			if (iw == word) continue;
-			int wlen = iw - word;
+			int wlen = (int)(iw - word);
 			char* found_word = new char[wlen + 1];
 			memcpy(found_word, word, wlen);
 			found_word[wlen] = '\0';
@@ -186,7 +186,7 @@ void CommandInterpreter::execute(const char* cmd)
 
 	if (iw != word)
 	{
-		int wlen = iw - word;
+		int wlen = (int)(iw - word);
 		char* found_word = new char[wlen + 1];
 		memcpy(found_word, word, wlen);
 		found_word[wlen] = '\0';
