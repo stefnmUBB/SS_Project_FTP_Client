@@ -112,3 +112,6 @@ Accentul in evaluarea implementarii se va pune pe urmatoarele aspecte:
 ## Specificatii
 
 - [RFC959](https://datatracker.ietf.org/doc/html/rfc959)
+
+
+- Clientul a fost testat impreuna cu serverul FTP Xlight: https://www.xlightftpd.com/
