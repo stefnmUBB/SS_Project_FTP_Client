@@ -30,6 +30,9 @@ public:
 	void stor(const char* path);
 	void retr(const char* path);
 
+	void mode_binary();
+	void mode_ascii();
+
 
 	~FTPClient();	
 };

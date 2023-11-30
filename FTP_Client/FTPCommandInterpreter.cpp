@@ -45,7 +45,7 @@ namespace
 	void cmd_put(CommandInterpreter* ci, FTPClient* ftp, const Parameter* pms)
 	{
 		const char* path = pms[0].get_value_str();
-		ftp->pasv();
+		ftp->pasv();		
 		ftp->stor(path);
 	}
 
@@ -55,6 +55,17 @@ namespace
 		ftp->pasv();
 		ftp->retr(path);
 	}
+
+	void cmd_binary(CommandInterpreter* ci, FTPClient* ftp, const Parameter* pms)
+	{		
+		ftp->mode_binary();		
+	}
+
+	void cmd_ascii(CommandInterpreter* ci, FTPClient* ftp, const Parameter* pms)
+	{
+		ftp->mode_ascii();
+	}
+
 }
 
 FTPCommandInterpreter::FTPCommandInterpreter(FTPClient* ftp) : ftp{ ftp }
@@ -62,11 +73,14 @@ FTPCommandInterpreter::FTPCommandInterpreter(FTPClient* ftp) : ftp{ ftp }
    register_command(LAMBDA(this, ftp, cmd_login), "login", Param(0, "user", ParameterType::STRING), Param(1, "pass", ParameterType::STRING));
    register_command(LAMBDA(this, ftp, cmd_help), "help");
    register_command(LAMBDA(this, ftp, cmd_logout), "logout");
-   register_command(LAMBDA(this, ftp, cmd_list1), "list", Param(0, "path", ParameterType::STRING));
+   register_command(LAMBDA(this, ftp, cmd_list1), "list", Param(0, "path", ParameterType::PATH));
    register_command(LAMBDA(this, ftp, cmd_list0), "list");
    register_command(LAMBDA(this, ftp, cmd_pasv), "pasv");
-   register_command(LAMBDA(this, ftp, cmd_put), "put", Param(0, "path", ParameterType::STRING));
-   register_command(LAMBDA(this, ftp, cmd_retr), "get", Param(0, "path", ParameterType::STRING));
+   register_command(LAMBDA(this, ftp, cmd_put), "put", Param(0, "path", ParameterType::PATH));
+   register_command(LAMBDA(this, ftp, cmd_retr), "get", Param(0, "path", ParameterType::PATH));
+
+   register_command(LAMBDA(this, ftp, cmd_ascii), "ascii");
+   register_command(LAMBDA(this, ftp, cmd_binary), "binary");
 }
 
 

@@ -105,15 +105,37 @@ void FTPClient::list(const char* path)
 
 	if (telnet_client->recv_response() != 226)
 		throw std::exception("Failed transfer");
+}
 
+void FTPClient::mode_binary()
+{
+	if(send_command_wrapper(bufferf("TYPE I"))!=200)
+		throw std::exception("Failed");
+}
+
+void FTPClient::mode_ascii()
+{
+	if (send_command_wrapper(bufferf("TYPE A")) != 200)
+		throw std::exception("Failed");
 }
 
 void FTPClient::stor(const char* path)
 {
+	std::vector<char> buffer;
+	
+	try
+	{
+		buffer = filesystem->read(path);
+	}
+	catch (const std::exception& e)
+	{
+		data_port.close();
+		throw e;
+	}
+
 	if(send_command_wrapper(bufferf("STOR %s", path))!=150)
 		throw std::exception("Failed");
-
-	std::vector<char> buffer = filesystem->read(path);
+	
 	data_port.send(buffer.data(), buffer.size());
 	data_port.close();
 
@@ -131,6 +153,8 @@ void FTPClient::retr(const char* path)
 	
 	std::vector<char> buffer(data_size);	
 	data_port.recv(buffer.data(), buffer.size());	
+	data_port.close();
+
 	filesystem->write(path, buffer);
 
 	if (telnet_client->recv_response() != 226)

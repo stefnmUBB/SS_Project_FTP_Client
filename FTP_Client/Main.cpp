@@ -12,15 +12,15 @@ using namespace std;
 
 
 void run_client()
-{
-    FTPClient ftp_client("192.168.56.1", 21, printf);
+{    
+    FTPClient ftp_client("192.168.56.1", 21, printf);    
 
     FTPCommandInterpreter ci(&ftp_client);        
 
+    std::string cmd;
     while (1)
     {
-        std::cout << ">> ";
-        std::string cmd;
+        std::cout << ">> ";        
         std::getline(cin, cmd);
 
         try

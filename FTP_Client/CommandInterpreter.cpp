@@ -61,6 +61,26 @@ struct CommandInterpreter::_privates_
 		return (int)result;
 	}
 
+	static void validate_path(const char* word)
+	{
+		int dirname_len = 0;
+		int folders_count = 0;
+
+		const char* w = word;
+		for (int i = 0; *w && i < CMD_MAX_LENGTH; i++, *w++)
+		{
+			if (*w == '/')
+			{
+				if (dirname_len == 0 && folders_count != 0)
+					throw std::exception("Invalid path name: duplicate / separators aren't allowed");
+				folders_count++;
+				dirname_len = 0;
+			}
+			else dirname_len++;
+		}
+		if (*w)
+			throw std::exception("Path too long");
+	}
 
 	static bool try_match_token(const Token& tk, const char* word, /* ref */ Parameter*& param)
 	{		
@@ -80,6 +100,13 @@ struct CommandInterpreter::_privates_
 		if (tk.param_type == ParameterType::INTEGER)
 		{
 			*(param++) = Parameter{ tk.param_name, my_atoi(word) };
+			return true;
+		}
+
+		if (tk.param_type == ParameterType::PATH)
+		{
+			validate_path(word);
+			*(param++) = Parameter{ tk.param_name, word };
 			return true;
 		}
 		
@@ -151,7 +178,10 @@ namespace
 		if ('a' <= c && c <= 'z') return true;
 		if ('A' <= c && c <= 'Z') return true;
 		if ('0' <= c && c <= '9') return true;
+		if (c == '_') return true;
 		if (c == ' ') return true;
+		if (c == '/') return true;		
+		if (c == '.') return true;		
 		return false;
 	}
 }

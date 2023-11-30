@@ -19,6 +19,13 @@ namespace Utils
 		friend std::ostream& operator << (std::ostream& o, const Color& color);
 	};
 
-	std::ostream& operator << (std::ostream& o, const Color& color);
+	std::ostream& operator << (std::ostream& o, const Color& color);	
+
+	inline static constexpr char nibble2chr(int nibble)
+	{
+		nibble &= 0xF;
+		if (nibble < 10) return '0' + nibble;
+		return 'A' + nibble;
+	}
 
 }

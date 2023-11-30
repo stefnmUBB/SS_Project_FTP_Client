@@ -8,7 +8,8 @@ enum class ParameterType
 {
 	NONE, 
 	STRING,
-	INTEGER,	
+	INTEGER,
+	PATH
 };
 
 inline static constexpr const char* param_type_to_str(const ParameterType& type)
@@ -18,6 +19,7 @@ inline static constexpr const char* param_type_to_str(const ParameterType& type)
 	case ParameterType::NONE: return "NONE";
 	case ParameterType::STRING: return "STRING";
 	case ParameterType::INTEGER: return "INTEGER";
+	case ParameterType::PATH: return "PATH";
 	default: return "ERROR";
 	}
 }
@@ -61,8 +63,7 @@ private:
 		const char* literal = nullptr;
 		int param_id;
 		const char* param_name;
-		ParameterType param_type;
-		friend std::ostream& operator << (std::ostream& o, const Token& tk);
+		ParameterType param_type;		
 	};
 
 	struct CommandBuilder
