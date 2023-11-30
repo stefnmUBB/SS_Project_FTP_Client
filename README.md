@@ -99,6 +99,24 @@ Accentul in evaluarea implementarii se va pune pe urmatoarele aspecte:
 
     Se primesc N bytes din Data Transfer Port (N=specificat de raspunsul 150)
 
+- ```binary```
+
+    Seteaza modul de transfer ca binar/image type
+
+    **Comenzi FTP executate**
+    ```
+    TYPE I
+    ```
+
+- ```ascii```
+
+    Seteaza modul de transfer ca ASCII (se gestioneaza transmiterea corecta a caracterelor sfarsit de linie intre sisteme)
+
+    **Comenzi FTP executate**
+    ```
+    TYPE A
+    ```
+
 ## Comenzi FTP implementate
 
 - `USER`
@@ -108,10 +126,10 @@ Accentul in evaluarea implementarii se va pune pe urmatoarele aspecte:
 - `LIST`
 - `STOR`
 - `RETR`
+- `TYPE`
 
-## Specificatii
+## Resurse
 
 - [RFC959](https://datatracker.ietf.org/doc/html/rfc959)
-
-
+- http://www.tcpipguide.com/free/t_TCPIPFileandMessageTransferApplicationsandProtocol.htm - mai bine explicat protocolul
 - Clientul a fost testat impreuna cu serverul FTP Xlight: https://www.xlightftpd.com/
