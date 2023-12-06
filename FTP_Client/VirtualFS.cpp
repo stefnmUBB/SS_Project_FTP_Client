@@ -38,6 +38,10 @@ std::vector<char> VirtualFS::read(std::filesystem::path relative_path)
 	std::cout << "File size : " << length << "\n";
 	std::vector<char> buffer(length);
 	f.read(buffer.data(), length);	
+
+	if (f.fail())
+		throw std::exception("File reading failed");
+
 	f.close();	
 
 	return buffer;
@@ -55,5 +59,9 @@ void VirtualFS::write(std::filesystem::path relative_path, std::vector<char> buf
 	}
 
 	f.write(buffer.data(), buffer.size());
+
+	if (f.fail())
+		throw std::exception("File writing failed");
+
 	f.close();	
 }

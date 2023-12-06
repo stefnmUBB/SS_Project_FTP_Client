@@ -11,9 +11,9 @@
 using namespace std;
 
 
-void run_client()
+void run_client(const char* ip, int port)
 {    
-    FTPClient ftp_client("192.168.56.1", 21, printf);    
+    FTPClient ftp_client(ip, port, printf);
 
     FTPCommandInterpreter ci(&ftp_client);        
 
@@ -36,11 +36,12 @@ void run_client()
     return;
 }
 
-int main()
+int main(int argc, const char** argv)
 {    
     try
     {        
-        run_client();
+        //run_client(argv[1], argc == 3 ? atoi(argv[2]) : 21);
+        run_client("127.0.0.1", 21);
     }
     catch (exception& e)
     {

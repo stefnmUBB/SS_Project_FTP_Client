@@ -93,15 +93,24 @@ void FTPClient::list(const char* path)
 	if (resp != 150)
 		throw std::exception("Failed");
 
-	int data_size = get_data_size(line_buffer);
+	//int data_size = get_data_size(line_buffer);
+	//printf("Data size = %i\n", data_size);
 
-	printf("Data size = %i\n", data_size);
 
-	char* buffer = new char[data_size + 1];
-	data_port.recv(buffer, data_size);
-	buffer[data_size] = 0;
+	std::vector<char> tmp_buffer(1024);
+	std::vector<char> buffer;
+	int tmp_effective_size = 0;
 
-	printf(buffer);
+	while ((tmp_effective_size = data_port.recv(tmp_buffer.data(), tmp_buffer.size()).bytes_count) > 0)
+	{
+		buffer.insert(buffer.end(), tmp_buffer.begin(), tmp_buffer.begin() + tmp_effective_size);
+	}
+	//data_port.recv(buffer.data(), buffer.size());	
+	data_port.close();	
+
+	buffer.push_back('\0');
+
+	printf(buffer.data());
 
 	if (telnet_client->recv_response() != 226)
 		throw std::exception("Failed transfer");
@@ -148,11 +157,19 @@ void FTPClient::retr(const char* path)
 	if (send_command_wrapper(bufferf("RETR %s", path)) != 150)
 		throw std::exception("Failed");
 
-	int data_size = get_data_size(line_buffer);
-	printf("Data size = %i\n", data_size);
+	//int data_size = get_data_size(line_buffer);
+	//printf("Data size = %i\n", data_size);
 	
-	std::vector<char> buffer(data_size);	
-	data_port.recv(buffer.data(), buffer.size());	
+	std::vector<char> tmp_buffer(1024);
+	std::vector<char> buffer;
+	int tmp_effective_size = 0;
+
+	while ((tmp_effective_size = data_port.recv(tmp_buffer.data(), tmp_buffer.size()).bytes_count) > 0)
+	{
+		buffer.insert(buffer.end(), tmp_buffer.begin(), tmp_buffer.begin() + tmp_effective_size);
+	}	
+	
+	//data_port.recv(buffer.data(), buffer.size());	
 	data_port.close();
 
 	filesystem->write(path, buffer);

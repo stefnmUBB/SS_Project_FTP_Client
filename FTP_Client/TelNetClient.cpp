@@ -29,8 +29,8 @@ void TelNetClient::reconnect()
 
 int TelNetClient::send_command(const char* command)
 {
-	tcp.send(command, strlen(command));
-	tcp.send("\r\n", 2);
+	tcp.send(bufferf("%s\r\n", command), strlen(command) + 2);
+	//tcp.send("\r\n", 2);
 	return recv_response();
 }
 
