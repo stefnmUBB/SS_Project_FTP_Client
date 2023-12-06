@@ -1,6 +1,7 @@
 #include "FTPClient.h"
 #include <iostream>
 #include "utils.h"
+#include <bout.h>
 
 FTPClient::FTPClient(const char* ip, int port, std::function<void(const char*)> print_line)
 {
@@ -33,11 +34,11 @@ void FTPClient::login(const char* user, const char* pass)
 		telnet_client->reconnect();
 		connected = true;
 	}
-	if (send_command_wrapper(bufferf("USER %s", user)) != 331)
+	if (send_command_wrapper(bout() << "USER " << user << bfin) != 331)
 	{
 		throw std::exception("login failed");				
 	}	
-	if (send_command_wrapper(bufferf("PASS %s", pass)) != 230)
+	if (send_command_wrapper(bout() << "PASS " << pass << bfin) != 230)
 	{
 		throw std::exception("login failed");
 	}	
@@ -49,7 +50,8 @@ void FTPClient::logout()
 	{
 		throw std::exception("logout failed");
 	}
-	connected = false;
+	connected = false;	
+	telnet_client->close();
 }
 
 namespace
@@ -59,7 +61,7 @@ namespace
 	{
 		for (int i = 0; i < len && *buff && *buff != c; i++, buff++);		
 		if (*buff == c) return buff;
-		throw std::exception(bufferf("Failed to find character: '%c'", c));
+		throw std::exception(bout() << "Failed to find character: '" << c << "'" << bfin);
 	}
 
 	//	"150 Opening ASCII mode data connection for ... (163 bytes)
@@ -89,7 +91,7 @@ namespace
 
 void FTPClient::list(const char* path)
 {
-	int resp = path == nullptr ? send_command_wrapper("LIST") : send_command_wrapper(bufferf("LIST %s", path));		
+	int resp = path == nullptr ? send_command_wrapper("LIST") : send_command_wrapper(bout() << "LIST " << path << bfin);
 	if (resp != 150)
 		throw std::exception("Failed");
 
@@ -118,13 +120,13 @@ void FTPClient::list(const char* path)
 
 void FTPClient::mode_binary()
 {
-	if(send_command_wrapper(bufferf("TYPE I"))!=200)
+	if(send_command_wrapper("TYPE I")!=200)
 		throw std::exception("Failed");
 }
 
 void FTPClient::mode_ascii()
 {
-	if (send_command_wrapper(bufferf("TYPE A")) != 200)
+	if (send_command_wrapper("TYPE A") != 200)
 		throw std::exception("Failed");
 }
 
@@ -142,7 +144,7 @@ void FTPClient::stor(const char* path)
 		throw e;
 	}
 
-	if(send_command_wrapper(bufferf("STOR %s", path))!=150)
+	if (send_command_wrapper(bout() << "STOR " << path << bfin) != 150)
 		throw std::exception("Failed");
 	
 	data_port.send(buffer.data(), buffer.size());
@@ -154,7 +156,7 @@ void FTPClient::stor(const char* path)
 
 void FTPClient::retr(const char* path)
 {
-	if (send_command_wrapper(bufferf("RETR %s", path)) != 150)
+	if (send_command_wrapper(bout() << "RETR " << path << bfin) != 150)
 		throw std::exception("Failed");
 
 	//int data_size = get_data_size(line_buffer);
@@ -208,8 +210,8 @@ void FTPClient::pasv()
 				throw std::exception("Failed to parse PASV address: too many numbers");
 			i++;
 			continue;
-		}
-		throw std::exception(bufferf("Failed to parse PASV address: invalid character '\\x%02X'", buff[i]));
+		}		
+		throw std::exception(bout() << "Failed to parse PASV address: invalid character '0x" << bhex << buff[i] << "'" << bfin);
 	}
 
 	if (buff[k] != ')')
@@ -224,7 +226,7 @@ void FTPClient::pasv()
 	if (i < 6)
 		throw std::exception("Failed to parse PASV address: insufficient numbers");
 
-	bufferf ip("%i.%i.%i.%i", a[0], a[1], a[2], a[3]);
+	const char* ip = bout() << a[0] << "." << a[1] << "." << a[2] << "." << a[3] << bfin;	
 	int port = a[4] * 256 + a[5];
 
 	data_port.connect(ip, port);

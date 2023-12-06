@@ -1,14 +1,14 @@
 #pragma once
 
-#include<stdio.h>
+#include <stdio.h>
 
 /// <summary>
 /// wrapper around snprintf for quick inline concatenations
 /// </summary>
-class bufferf final
+/*class bufferf final
 {
 private:
-	char* buffer = nullptr;
+	char* buffer = nullptr;	
 public:
 	template<typename... Args>
 	bufferf(const char* format, Args... tail)
@@ -21,4 +21,4 @@ public:
 	operator const char* () const { return buffer; }
 
 	~bufferf() { delete[] buffer; }
-};
+};*/

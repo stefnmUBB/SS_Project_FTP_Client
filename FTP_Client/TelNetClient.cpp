@@ -1,5 +1,6 @@
 #include "TelNetClient.h"
 #include <exception>
+#include <bout.h>
 
 TelNetClient::TelNetClient(const char* ip, int port, std::function<void(char*)> line_received_callback) : line_received_callback { line_received_callback },
 	ip{ip}, port{port}
@@ -22,15 +23,24 @@ TelNetClient::TelNetClient(const char* ip, int port, std::function<void(char*)> 
 void TelNetClient::reconnect()
 {	
 	printf("Reconnecting...\n");
-	tcp.close();
+	if (is_connected)
+		close();
 	tcp.connect(ip, port);
 	recv_response(); // Server greeting		
+	is_connected = true;
+}
+
+void TelNetClient::close()
+{
+	is_connected = false;
+	tcp.close();
 }
 
 int TelNetClient::send_command(const char* command)
 {
-	tcp.send(bufferf("%s\r\n", command), strlen(command) + 2);
-	//tcp.send("\r\n", 2);
+	command = bout() << command << "\r\n" << bfin;
+	size_t len = strlen(command);
+	tcp.send(command, len);
 	return recv_response();
 }
 

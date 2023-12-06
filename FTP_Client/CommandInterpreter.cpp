@@ -2,6 +2,7 @@
 
 #include <exception>
 #include "bufferf.h"
+#include <bout.h>
 
 static constexpr int CMD_MAX_LENGTH = 256;
 
@@ -11,7 +12,7 @@ Parameter::Parameter(const char* name, int value_int) : name{ name }, type{ Para
 void Parameter::validate_requested_type(ParameterType type) const
 {
 	if (this->type != type)
-		throw std::exception(bufferf("Invalid parameter type for '%s'", this->name));
+		throw std::exception(bout() << "Invalid parameter type for '" << this->name << "'" << bfin);
 }
 
 const char* Parameter::get_value_str() const
@@ -50,14 +51,14 @@ struct CommandInterpreter::_privates_
 				result = result * 10 + (*input - '0');
 				continue;
 			}
-			throw std::exception(bufferf("Failed to parse integer: invalid character '%02X'", *input));
+			throw std::exception(bout() << "Failed to parse integer: invalid character '" << *input << "'" << bfin);			
 		}
 		if (*input)
 			throw std::exception("Failed to parse integer: input length exceeded");
 
 		result *= sgn;
-		if (result >= INT_MAX || result <= INT_MIN)
-			throw std::exception(bufferf("Argument out of range: %i", result));
+		if (result >= INT_MAX || result <= INT_MIN)						
+			throw std::exception(bout() << "Argument out of range: " << result << bfin);
 		return (int)result;
 	}
 
@@ -67,7 +68,7 @@ struct CommandInterpreter::_privates_
 		int folders_count = 0;
 
 		const char* w = word;
-		for (int i = 0; *w && i < CMD_MAX_LENGTH; i++, *w++)
+		for (int i = 0; *w && i < CMD_MAX_LENGTH; i++, w++)
 		{
 			if (*w == '/')
 			{
@@ -195,8 +196,8 @@ void CommandInterpreter::execute(const char* cmd)
 
 	for (int i = 0; i < CMD_MAX_LENGTH && *cmd; cmd++, i++)
 	{
-		if (!is_valid_character(*cmd)) 
-			throw std::exception(bufferf("Invalid character: '\\x%02X'", *cmd));
+		if (!is_valid_character(*cmd))
+			throw std::exception(bout() << "Invalid character: '" << *cmd << "'" << bfin);
 
 		if (*cmd == ' ')
 		{

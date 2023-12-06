@@ -20,6 +20,7 @@
 
 #include "bufferf.h"
 #include "tcp_exception.h"
+#include <bout.h>
 
 class TCP::__privates__
 {
@@ -36,7 +37,7 @@ public:
 		int iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
 		if (iResult != 0) 
 		{
-			throw std::exception(bufferf("WSAStartup failed with error: %i", iResult));
+			throw std::exception(bout() << "WSAStartup failed with error:" << iResult << bfin);
 		}
 	}
 
@@ -61,7 +62,7 @@ public:
 		char port_str[20] = { 0 };
 		if (_itoa_s(port, port_str, 10) != 0)
 		{			
-			throw std::exception(bufferf("Failed to convert port number to string: %i", port));
+			throw std::exception(bout() << "Failed to convert port number to string: " << port << bfin);
 		}		
 		addrinfo* result = nullptr;
 
@@ -69,7 +70,7 @@ public:
 		if (iResult != 0) 
 		{
 			WSACleanup();
-			throw std::exception(bufferf("getaddrinfo failed with error: %i", iResult));
+			throw std::exception(bout() << "getaddrinfo failed with error:" << iResult << bfin);
 		}
 
 
