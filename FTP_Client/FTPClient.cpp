@@ -195,11 +195,13 @@ void FTPClient::pasv()
 		throw std::exception("Invalid passive response message");
 	char* buff = line_buffer + strlen(line_pfx);		
 
-	int a[6];
+	int a[6]{};
 	parse_pasv_addr(buff, a);
 
 	const char* ip = bout() << a[0] << "." << a[1] << "." << a[2] << "." << a[3] << bfin;	
 	int port = a[4] * 256 + a[5];
+
+	printf("%s\n", ip);
 
 	data_port.connect(ip, port);
 	printf("Opened data port on %s:%i.\n", (const char*)ip, port);
