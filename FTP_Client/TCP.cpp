@@ -64,8 +64,7 @@ public:
 		{			
 			throw std::exception(bout() << "Failed to convert port number to string: " << port << bfin);
 		}		
-		addrinfo* result = nullptr;
-		std::cout << host << "\n";
+		addrinfo* result = nullptr;		
 
 		int iResult = getaddrinfo(host, port_str, &hints, &result);
 		if (iResult != 0) 

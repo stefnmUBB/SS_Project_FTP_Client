@@ -75,7 +75,7 @@ FTPCommandInterpreter::FTPCommandInterpreter(FTPClient* ftp) : ftp{ ftp }
    register_command(LAMBDA(this, ftp, cmd_logout), "logout");
    register_command(LAMBDA(this, ftp, cmd_list1), "list", Param(0, "path", ParameterType::PATH));
    register_command(LAMBDA(this, ftp, cmd_list0), "list");
-   register_command(LAMBDA(this, ftp, cmd_pasv), "pasv");
+   //register_command(LAMBDA(this, ftp, cmd_pasv), "pasv");
    register_command(LAMBDA(this, ftp, cmd_put), "put", Param(0, "path", ParameterType::PATH));
    register_command(LAMBDA(this, ftp, cmd_retr), "get", Param(0, "path", ParameterType::PATH));
 

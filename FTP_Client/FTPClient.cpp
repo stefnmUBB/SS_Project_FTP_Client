@@ -199,9 +199,7 @@ void FTPClient::pasv()
 	parse_pasv_addr(buff, a);
 
 	const char* ip = bout() << a[0] << "." << a[1] << "." << a[2] << "." << a[3] << bfin;	
-	int port = a[4] * 256 + a[5];
-
-	printf("%s\n", ip);
+	int port = a[4] * 256 + a[5];	
 
 	data_port.connect(ip, port);
 	printf("Opened data port on %s:%i.\n", (const char*)ip, port);
