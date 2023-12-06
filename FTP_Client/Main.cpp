@@ -7,6 +7,7 @@
 #include <string>
 #include "tcp_exception.h"
 #include "utils.h"
+#include "ArgsParser.h"
 
 using namespace std;
 
@@ -36,12 +37,19 @@ void run_client(const char* ip, int port)
     return;
 }
 
+
 int main(int argc, const char** argv)
 {    
     try
-    {        
-        //run_client(argv[1], argc == 3 ? atoi(argv[2]) : 21);
-        run_client("127.0.0.1", 21);
+    {
+        ArgsParser args(argc, argv);
+        const char* ip = args.get_arg<const char*>(1, "127.0.0.1");
+        int port = args.get_arg(2, 21);  
+
+        if (Utils::get_str_bound(ip, 20) < 0)
+            throw std::exception("Invalid IP");
+
+        run_client(ip, port);
     }
     catch (exception& e)
     {

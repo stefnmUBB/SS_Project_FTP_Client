@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <string>
+#include "utils.h"
 
 struct _bhex {};
 struct _bdec {};
@@ -25,10 +26,10 @@ public:
 	bout& operator <<(const char* str)
 	{
 		const char* it = str;
-		int k = 0;
-		for (; *it && k < STR_ARG_MAX_SIZE; it++, k++);
-		if (*it)
-			throw std::exception("bout failed: invalid char*: '\\0' not found");
+
+		int k = Utils::get_str_bound(str, STR_ARG_MAX_SIZE);
+		if(k<0)
+			throw std::exception("bout failed: invalid char*: '\\0' not found");					
 
 		if (k > 0) // k==0 means "" so no need to append anything
 		{

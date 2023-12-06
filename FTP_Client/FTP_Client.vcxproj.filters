@@ -80,5 +80,8 @@
     <ClInclude Include="include\bout.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\ArgsParser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

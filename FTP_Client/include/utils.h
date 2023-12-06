@@ -28,4 +28,18 @@ namespace Utils
 		return 'A' + nibble;
 	}
 
+	// returns the address of the first occurence of c in buff, otherwise exception
+	const char* my_strnchr(const char* buff, int len, char c);
+
+	int my_atoi(const char* input);
+	
+	// safely checks if strlen(str) < max_len, returns strlen(str) if bounded, -1 otherwise
+	inline static constexpr int get_str_bound(const char* str, int max_len)
+	{
+		const char* it = str;
+		int i = 0;
+		for (; *it && i < max_len; it++, i++);
+		return *it ? -1 : i;
+	}
+
 }

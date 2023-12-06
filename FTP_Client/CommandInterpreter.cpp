@@ -2,7 +2,8 @@
 
 #include <exception>
 #include "bufferf.h"
-#include <bout.h>
+#include "bout.h"
+#include "utils.h"
 
 static constexpr int CMD_MAX_LENGTH = 256;
 
@@ -32,35 +33,6 @@ Param::Param(int id, const char* name, ParameterType type) : id{ id }, name{ nam
 struct CommandInterpreter::_privates_
 {
 	std::vector<Command> commands;
-
-	static int my_atoi(const char* input)
-	{
-		constexpr int MAX_INPUT_LEN = 10;
-		long long result = 0;
-		int sgn = 1;
-
-		for (int i = 0; i < MAX_INPUT_LEN && *input; i++, input++)
-		{
-			if (i == 0 && *input == '-')
-			{
-				sgn = -1; 
-				continue;
-			}
-			if ('0' <= *input && *input <= '9')
-			{
-				result = result * 10 + (*input - '0');
-				continue;
-			}
-			throw std::exception(bout() << "Failed to parse integer: invalid character '" << *input << "'" << bfin);			
-		}
-		if (*input)
-			throw std::exception("Failed to parse integer: input length exceeded");
-
-		result *= sgn;
-		if (result >= INT_MAX || result <= INT_MIN)						
-			throw std::exception(bout() << "Argument out of range: " << result << bfin);
-		return (int)result;
-	}
 
 	static void validate_path(const char* word)
 	{
@@ -100,7 +72,7 @@ struct CommandInterpreter::_privates_
 
 		if (tk.param_type == ParameterType::INTEGER)
 		{
-			*(param++) = Parameter{ tk.param_name, my_atoi(word) };
+			*(param++) = Parameter{ tk.param_name, Utils::my_atoi(word) };
 			return true;
 		}
 

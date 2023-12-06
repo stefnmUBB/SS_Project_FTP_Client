@@ -1,7 +1,7 @@
 #include "FTPClient.h"
 #include <iostream>
 #include "utils.h"
-#include <bout.h>
+#include "bout.h"
 
 FTPClient::FTPClient(const char* ip, int port, std::function<void(const char*)> print_line)
 {
@@ -52,40 +52,6 @@ void FTPClient::logout()
 	}
 	connected = false;	
 	telnet_client->close();
-}
-
-namespace
-{
-	// returns the address of the first occurence of c in buff, otherwise exception
-	const char* my_strnchr(const char* buff, int len, char c)
-	{
-		for (int i = 0; i < len && *buff && *buff != c; i++, buff++);		
-		if (*buff == c) return buff;
-		throw std::exception(bout() << "Failed to find character: '" << c << "'" << bfin);
-	}
-
-	//	"150 Opening ASCII mode data connection for ... (163 bytes)
-	int get_data_size(const char* input)
-	{
-		const char* nr_start = my_strnchr(input, FTPClient::MAX_LINE_BUFF_SIZE - 1, '(') + 1;
-		long long nr = 0;
-		const char* nr_max_end = input + FTPClient::MAX_LINE_BUFF_SIZE - 1;
-		
-		const char* it = nr_start;
-		int digits_cnt = 0;
-		while ('0' <= *it && *it <= '9' && it != nr_max_end && digits_cnt < 10)
-		{
-			nr = nr * 10 + *it - '0';
-			it++;
-			digits_cnt++;
-		}
-
-		if (digits_cnt == 0)
-			throw std::exception("No number found");
-		if (nr<INT_MIN || nr>INT_MAX)
-			throw std::exception("Number out of range");
-		return nr;
-	}
 }
 
 
@@ -181,6 +147,45 @@ void FTPClient::retr(const char* path)
 }
 
 
+namespace
+{
+	// buff = "192,168,56,1,244,12)" --> int[] {192, 168, 56, 1, 244, 12};	
+	void parse_pasv_addr(const char* buff, int a[6])
+	{
+		constexpr int maxStrLen = 4 * 6;
+		int i = 0, k = 0;
+
+		for (; buff[k] != ')' && k < maxStrLen; k++)
+		{
+			if ('0' <= buff[k] && buff[k] <= '9')
+			{
+				a[i] = a[i] * 10 + (buff[k] - '0');
+				continue;
+			}
+			if (buff[k] == ',')
+			{
+				if (i >= 6)
+					throw std::exception("Failed to parse PASV address: too many numbers");
+				i++;
+				continue;
+			}
+			throw std::exception(bout() << "Failed to parse PASV address: invalid character '0x" << bhex << buff[i] << "'" << bfin);
+		}
+
+		if (buff[k] != ')')
+			throw std::exception("Failed to parse PASV address: input too long");
+		else
+		{
+			if (i >= 6)
+				throw std::exception("Failed to parse PASV address: too many numbers");
+			i++;
+		}
+
+		if (i < 6)
+			throw std::exception("Failed to parse PASV address: insufficient numbers");
+	}
+}
+
 void FTPClient::pasv()
 {
 	if (send_command_wrapper("PASV") != 227)
@@ -188,43 +193,10 @@ void FTPClient::pasv()
 	const char* line_pfx = "227 Entering Passive Mode (";
 	if (strncmp(line_pfx, line_buffer, strlen(line_pfx)) != 0)
 		throw std::exception("Invalid passive response message");
-	char* buff = line_buffer + strlen(line_pfx);	
+	char* buff = line_buffer + strlen(line_pfx);		
 
-	// buff = "192,168,56,1,244,12)" --> int[] {192, 168, 56, 1, 244, 12};
-
-	int maxStrLen = 4 * 6;
-
-	int a[6] = {}, i = 0;
-
-	int k = 0;
-	for (; buff[k] != ')' && k < maxStrLen; k++)
-	{
-		if ('0' <= buff[k] && buff[k] <= '9')
-		{
-			a[i] = a[i] * 10 + (buff[k] - '0');
-			continue;
-		}
-		if (buff[k] == ',')
-		{
-			if (i >= 6)
-				throw std::exception("Failed to parse PASV address: too many numbers");
-			i++;
-			continue;
-		}		
-		throw std::exception(bout() << "Failed to parse PASV address: invalid character '0x" << bhex << buff[i] << "'" << bfin);
-	}
-
-	if (buff[k] != ')')
-		throw std::exception("Failed to parse PASV address: input too long");
-	else
-	{
-		if (i >= 6)
-			throw std::exception("Failed to parse PASV address: too many numbers");
-		i++;		
-	}
-
-	if (i < 6)
-		throw std::exception("Failed to parse PASV address: insufficient numbers");
+	int a[6];
+	parse_pasv_addr(buff, a);
 
 	const char* ip = bout() << a[0] << "." << a[1] << "." << a[2] << "." << a[3] << bfin;	
 	int port = a[4] * 256 + a[5];

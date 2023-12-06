@@ -7,7 +7,7 @@
 
 const char* TCPResult::get_error_message()
 {    
-    wchar_t msgbuf[256];
+    wchar_t msgbuf[256]{};
     msgbuf[0] = '\0';
 
     FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
