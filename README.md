@@ -1,4 +1,5 @@
 # Proiect Securitate Software : Client FTP
+Colaborare cu: https://github.com/mihai12p/ubb/tree/main/sem5/ss/proiect
 
 ## Cerinta
 
